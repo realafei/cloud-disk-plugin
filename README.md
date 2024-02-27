@@ -57,4 +57,7 @@
 
 ### 选择替换范围
 
+- 点击应用时，只会重命名已选中的文件
+- 可通过全选与不全选快速选择目标文件
+
 ![选择替换范围](./public/readme/screenshot_main_panel_series_check.png)
