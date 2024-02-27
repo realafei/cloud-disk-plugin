@@ -238,14 +238,17 @@ export abstract class Provider {
   // 刷新数据
   protected abstract refresh(): void | Promise<any>;
   // 发起重命名请求
-  protected abstract renameRequest(): Promise<any>;
+  protected abstract renameRequest(data?: IListItem[]): Promise<any>;
   // 批量重命名
   public batchRename(): void {
     if (!this.shouldContinue) {
       return;
     }
     this.isLoading = true;
-    this.renameRequest()
+    const data = this.currentList.filter(
+      (item) => item.isChecked && item.isChange && !item.isError
+    );
+    this.renameRequest(data)
       .then(() => {
         this._resetReplaceParams();
         return this.refresh();

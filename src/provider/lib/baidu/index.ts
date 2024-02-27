@@ -1,4 +1,5 @@
 import type {
+  IListItem,
   IOriginListItem,
   TRootElementInsertMethod,
 } from "@/provider/type";
@@ -74,20 +75,18 @@ export default class ProviderBaidu extends Provider {
   //   return Promise.resolve(result);
   // }
 
-  async renameRequest() {
-    const token = await getToken();
+  async renameRequest(data: IListItem[]) {
     const path = getPath();
-    const data = this.currentList
-      .filter((item) => item.isChange)
-      .map((item) => {
-        return {
-          id: item.id,
-          path: path + item.oldFileName,
-          newname: item.newFileName,
-        };
-      });
+    const token = await getToken();
+    const filelist = data.map((item) => {
+      return {
+        id: item.id,
+        path: path + item.oldFileName,
+        newname: item.newFileName,
+      };
+    });
     const body = new FormData();
-    body.append("filelist", JSON.stringify(data));
+    body.append("filelist", JSON.stringify(filelist));
     return fetch(
       `https://pan.baidu.com/api/filemanager?async=2&onnest=fail&opera=rename&bdstoken=${token}&clienttype=0&app_id=250528&web=1`,
       {
@@ -106,6 +105,7 @@ export default class ProviderBaidu extends Provider {
         if (res.errno === 0) {
           return new Promise((resolve) => {
             setTimeout(() => {
+              // 延迟时间，等待百度网盘更新
               resolve(res);
             }, 2000);
           });
