@@ -1,0 +1,56 @@
+@import "./transition.css";
+
+:root {
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --color-primary: var(--color-primary-500);
+  --color-primary-50: #eff8ff;
+  --color-primary-100: #def1ff;
+  --color-primary-200: #b6e4ff;
+  --color-primary-300: #75d0ff;
+  --color-primary-400: #2cb9ff;
+  --color-primary-500: #06a7ff;
+  --color-primary-600: #007fd4;
+  --color-primary-700: #0065ab;
+  --color-primary-800: #00558d;
+  --color-primary-900: #064774;
+  --color-primary-950: #042d4d;
+
+  --color-gray: var(--color-gray-500);
+  --color-gray-50: #f6f7f9;
+  --color-gray-100: #edeef1;
+  --color-gray-200: #d7dae0;
+  --color-gray-300: #b4bbc5;
+  --color-gray-400: #8b95a5;
+  --color-gray-500: #636d7e;
+  --color-gray-600: #576072;
+  --color-gray-700: #474e5d;
+  --color-gray-800: #3d434f;
+  --color-gray-900: #363b44;
+  --color-gray-950: #24262d;
+
+  --color-red: var(--color-red-500);
+  --color-red-50: #fef2f2;
+  --color-red-100: #fee2e2;
+  --color-red-200: #fecaca;
+  --color-red-300: #fca5a5;
+  --color-red-400: #f87171;
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+  --color-red-700: #b91c1c;
+  --color-red-800: #991b1b;
+  --color-red-900: #7f1d1d;
+  --color-red-950: #450a0a;
+
+  --gutter: 10px;
+
+  --shadow: 0 3px 10px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 5px 16px 0 rgba(0, 0, 0, 0.3);
+
+  --transition-all: all var(--transition-default);
+  --transition-default: var(--transition-duration)
+    var(--transition-timing-function);
+  --transition-duration: 0.3s;
+  --transition-timing-function: ease-in-out;
+}
