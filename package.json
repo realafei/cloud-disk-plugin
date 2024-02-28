@@ -2,7 +2,7 @@
   "name": "cloud-disk-plugin",
   "type": "module",
   "author": "realafei",
-  "version": "0.0.1-beta",
+  "version": "0.0.2-beta",
   "description": "Batch rename files of cloud disk.",
   "scripts": {
     "dev": "vite",
