@@ -6,6 +6,7 @@ import type {
 
 import { defineAsyncComponent } from "vue";
 import Provider from "@/provider/type";
+import sleep from "@/utils/sleep";
 import querySelector from "@/utils/querySelector";
 import fileNameParse from "@/utils/fileNameParse";
 
@@ -90,36 +91,67 @@ export default class ProviderBaidu extends Provider {
     return fetch(
       `https://pan.baidu.com/api/filemanager?async=2&onnest=fail&opera=rename&bdstoken=${token}&clienttype=0&app_id=250528&web=1`,
       {
-        method: "POST",
         body,
+        method: "POST",
       }
     )
       .then((res) => {
         if (res.ok) {
           return res.json();
         } else {
-          return Promise.reject(new Error("network error"));
+          return Promise.reject(new Error("filemanager error"));
         }
       })
       .then((res) => {
         if (res.errno === 0) {
-          return new Promise((resolve) => {
-            setTimeout(() => {
-              // 延迟时间，等待百度网盘更新
-              resolve(res);
-            }, 2000);
-          });
+          return this.waitResult(res, data);
         }
         return Promise.reject(res);
       });
   }
 
   refresh() {
-    this.visible = false;
     // ".nd-main-list, .nd-new-main-list"
-    return querySelector(".nd-new-main-list").then((res: any) =>
-      res?.__vue__?.reloadList()
-    );
+    return querySelector(".nd-new-main-list").then((res: any) => {
+      res?.__vue__?.reloadList();
+      return new Promise<void>((resolve) => {
+        let count = 20;
+        const timer = setInterval(() => {
+          if (
+            res.__vue__.$store.state.fileList.loadingList === false ||
+            --count < 0
+          ) {
+            resolve();
+            clearInterval(timer);
+          }
+        }, 500);
+      });
+    });
+  }
+
+  async waitResult(res: any, data: IListItem[]): Promise<any> {
+    // 延迟时间，等待百度网盘更新，对比更新结果
+    let count = 10;
+    const timeout = Math.max(data.length * 50, 1000);
+
+    while (count-- > 0) {
+      console.log("waitResult", count);
+      await this.refresh();
+      const originList: IOriginListItem[] = await this.getOriginList();
+      const originListMap = new Map(
+        originList.map((item) => [item.id, item.fullFileName])
+      );
+      const isMatched = data.every(
+        (item) =>
+          originListMap.has(item.id) &&
+          originListMap.get(item.id) === item.newFileName
+      );
+      if (!isMatched) {
+        await sleep(timeout);
+      } else {
+        return res;
+      }
+    }
   }
 }
 

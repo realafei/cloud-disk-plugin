@@ -1,10 +1,15 @@
-import type { TRootElementInsertMethod } from "@/provider/type";
+import type {
+  IOriginListItem,
+  TRootElementInsertMethod,
+} from "@/provider/type";
 
 import { defineAsyncComponent } from "vue";
 import Provider from "@/provider/type";
+import querySelector from "@/utils/querySelector";
+import fileNameParse from "@/utils/fileNameParse";
 
 const EnterComponent = defineAsyncComponent(
-  () => import("./EnterComponent.vue"),
+  () => import("./EnterComponent.vue")
 );
 
 export default class ProviderAli extends Provider {
@@ -12,7 +17,7 @@ export default class ProviderAli extends Provider {
     return (
       false &&
       location.href.startsWith(
-        "https://www.aliyundrive.com/drive/file/resource",
+        "https://www.aliyundrive.com/drive/file/resource"
       )
     );
   };
@@ -25,7 +30,25 @@ export default class ProviderAli extends Provider {
   EnterComponent = () => EnterComponent;
 
   getOriginList() {
-    return Promise.reject();
+    return querySelector("[class^=node-list-table-view--]").then((res: any) => {
+      const fileList = res?.__reactFiber.return.memoizedProps.value.dataSource;
+
+      if (!fileList) {
+        return Promise.reject();
+      }
+      const result: IOriginListItem[] = [];
+      fileList.forEach((item: any) => {
+        if (item.type === "file") {
+          result.push({
+            id: item.driveId,
+            fullFileName: item.name,
+            ...fileNameParse(item.name),
+          });
+        }
+      });
+
+      return result;
+    });
   }
 
   renameRequest() {

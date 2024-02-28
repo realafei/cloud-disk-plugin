@@ -236,7 +236,7 @@ export abstract class Provider {
   }
 
   // 刷新数据
-  protected abstract refresh(): void | Promise<any>;
+  protected abstract refresh(): Promise<any>;
   // 发起重命名请求
   protected abstract renameRequest(data?: IListItem[]): Promise<any>;
   // 批量重命名
@@ -251,9 +251,10 @@ export abstract class Provider {
     this.renameRequest(data)
       .then(() => {
         this._resetReplaceParams();
-        return this.refresh();
+        // return this.refresh();
       })
       .finally(() => {
+        this.visible = false;
         this.isLoading = false;
       });
   }

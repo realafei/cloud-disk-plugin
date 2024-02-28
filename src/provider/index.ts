@@ -26,7 +26,7 @@ export const getProviderRef = ((instanceRef?: Ref<Provider>) => {
   return (): Promise<Ref<Provider>> => {
     if (!instanceRef) {
       return getProvider().then((res: Provider) => {
-        instanceRef = ref(res) as Ref<Provider>;
+        instanceRef = ref<Provider>(res) as Ref<Provider>;
         return instanceRef;
       });
     }

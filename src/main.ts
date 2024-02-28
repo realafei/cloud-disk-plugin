@@ -7,11 +7,6 @@ import App from "@/App.vue";
 import { getProviderRef } from "@/provider";
 import querySelector from "@/utils/querySelector";
 
-window.setInterval(
-  () => getProviderRef().then((providerRef) => init(providerRef)),
-  300
-);
-
 const init = (providerRef: Ref<Provider>) => {
   querySelector(providerRef.value.rootElementInsertTarget).then((target) =>
     querySelector("#" + providerRef.value.rootElementId).catch(() => {
@@ -28,3 +23,8 @@ const init = (providerRef: Ref<Provider>) => {
     })
   );
 };
+
+setInterval(
+  () => getProviderRef().then((providerRef) => init(providerRef)),
+  300
+);
