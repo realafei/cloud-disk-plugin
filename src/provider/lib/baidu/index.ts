@@ -16,8 +16,8 @@ const EnterComponent = defineAsyncComponent(
 
 export default class ProviderBaidu extends Provider {
   static test = () =>
-    location.href.startsWith(
-      "https://pan.baidu.com/disk/main/#/index?category=all"
+    /https:\/\/pan\.baidu\.com\/disk\/main\/?#\/index\?category=all/.test(
+      location.href
     );
 
   type = "baidu";

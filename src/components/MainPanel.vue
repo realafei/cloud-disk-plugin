@@ -12,7 +12,23 @@
         <div v-if="providerRef.visible" class="main-panel-content">
           <div class="main-panel-content-header">
             <div class="main-panel-content-header-title">
-              批量重命名当前目录下所有文件
+              <span class="main-panel-content-header-title-content">
+                批量重命名当前目录下所有文件
+              </span>
+              <a
+                v-if="hasNewVersion"
+                :href="updateUrl"
+                target="_blank"
+                class="main-panel-content-header-title-new-version"
+              >
+                发现新版本：{{ newVersion }} 点击更新
+              </a>
+              <span
+                v-else
+                class="main-panel-content-header-title-current-version"
+              >
+                当前版本：{{ currentVersion }}
+              </span>
             </div>
             <form
               v-if="providerRef.replaceParams"
@@ -167,6 +183,7 @@ import MaterialInput from "@/components/Material/MaterialInput.vue";
 import MaterialRadio from "@/components/Material/MaterialRadio.vue";
 import MaterialLoading from "@/components/Material/MaterialLoading.vue";
 import MaterialCheckbox from "@/components/Material/MaterialCheckbox.vue";
+import useVersion from "@/utils/useVersion";
 
 export default defineComponent({
   name: "MainPanel",
@@ -177,6 +194,9 @@ export default defineComponent({
     MaterialCheckbox,
   },
   setup() {
+    const { currentVersion, newVersion, hasNewVersion, updateUrl } =
+      useVersion();
+
     const providerRef = inject<Ref<Provider>>("providerRef");
 
     const onMaskClick = () => {
@@ -215,6 +235,10 @@ export default defineComponent({
     });
 
     return {
+      currentVersion,
+      newVersion,
+      hasNewVersion,
+      updateUrl,
       providerRef,
       currentList,
       onMaskClick,
@@ -268,6 +292,21 @@ export default defineComponent({
   padding: var(--gutter);
   border-radius: var(--gutter);
   background-color: var(--color-gray-100);
+}
+.main-panel-content-header-title {
+  display: flex;
+  align-items: top;
+  justify-content: space-between;
+}
+.main-panel-content-header-title-content {
+  font-size: 18px;
+}
+.main-panel-content-header-title-current-version {
+  font-size: 12px;
+}
+.main-panel-content-header-title-new-version {
+  color: var(--color-red);
+  font-size: 12px;
 }
 .main-panel-content-header-form {
   display: grid;

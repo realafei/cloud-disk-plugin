@@ -21,6 +21,7 @@ export default defineConfig({
         grant: "none",
         match: "https://pan.baidu.com/disk/main*",
         license: "MIT",
+        homepage: "https://github.com/realafei/cloud-disk-plugin",
         namespace: "cloud-disk-plugin",
         description: "网盘文件批量重命名，支持百度网盘",
       },
