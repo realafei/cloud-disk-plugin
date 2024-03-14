@@ -12,7 +12,8 @@ export const is = <T = any>(val: unknown, type: string): val is T =>
 export const isString = (val: unknown): val is string =>
   is<string>(val, "String");
 
-// export const isNumber = (val: unknown): val is number => is<number>(val, "Number");
+// export const isNumber = (val: unknown): val is number =>
+//   is<number>(val, "Number");
 
 // export const isWindow = (val: unknown): val is Window => is<Window>(val, "Window");
 
@@ -20,7 +21,8 @@ export const isString = (val: unknown): val is string =>
 
 // export const isObject = (val: any): val is Record<any, any> => is<Record<any, any>>(val, "Object");
 
-// export const isBoolean = (val: unknown): val is boolean => is<boolean>(val, "Boolean");
+export const isBoolean = (val: unknown): val is boolean =>
+  is<boolean>(val, "Boolean");
 
 // export const isPromise = (val: unknown): val is Promise<any> => is<Promise<any>>(val, "Promise");
 

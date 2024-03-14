@@ -1,14 +1,18 @@
 <template>
   <label
     class="material-input"
-    :class="{ 'is-focus': isFocus, 'is-active': isActive }"
+    :class="{
+      'is-focus': isFocus,
+      'is-active': isActive,
+      'is-disabled': disabled,
+    }"
   >
-    <div v-if="label" class="material-input_label">{{ label }}</div>
+    <div v-if="label" class="material-input-label">{{ label }}</div>
     <input
       v-if="type !== 'textarea'"
       v-model="computedValue"
       ref="inputRef"
-      class="material-input_input"
+      class="material-input-input"
       :type="type"
       :value="modelValue"
       :disabled="disabled"
@@ -21,21 +25,27 @@
       v-else
       v-model="computedValue"
       ref="textareaRef"
-      class="material-input_textarea"
       rows="1"
+      class="material-input-textarea"
       :style="textareaStyle"
       :disabled="disabled"
       :readonly="readonly"
       :placeholder="computedPlaceholder"
       @blur="onTextareaBlur"
       @focus="onTextareaFocus"
-      @input="onTextareaInput"
     ></textarea>
   </label>
 </template>
 
 <script lang="ts">
-import { ref, computed, nextTick, onMounted, defineComponent } from "vue";
+import {
+  ref,
+  watch,
+  computed,
+  nextTick,
+  onMounted,
+  defineComponent,
+} from "vue";
 import { isEmpty } from "@/utils/is";
 
 export default defineComponent({
@@ -70,7 +80,11 @@ export default defineComponent({
   setup(props, { emit }) {
     const computedValue = computed({
       get: () => props.modelValue,
-      set: (val) => emit("update:modelValue", val),
+      set: (val) => {
+        if (!props.disabled && !props.readonly) {
+          emit("update:modelValue", val);
+        }
+      },
     });
     const computedPlaceholder = computed(() =>
       props.label ? "" : props.placeholder
@@ -100,9 +114,6 @@ export default defineComponent({
       isFocus.value = true;
       calcTextareaStyle();
     };
-    const onTextareaInput = () => {
-      calcTextareaStyle();
-    };
     const calcTextareaStyle = () => {
       textareaStyle.value.height = "auto";
       nextTick(() => {
@@ -112,9 +123,18 @@ export default defineComponent({
       });
     };
 
+    watch(
+      () => [props.type, props.modelValue],
+      ([_type]) => {
+        if (_type === "textarea") {
+          calcTextareaStyle();
+        }
+      }
+    );
+
     onMounted(() => {
       if (props.type === "textarea") {
-        onTextareaInput();
+        calcTextareaStyle();
       }
     });
 
@@ -129,7 +149,6 @@ export default defineComponent({
       onInputBlur,
       onInputFocus,
       onTextareaBlur,
-      onTextareaInput,
       onTextareaFocus,
     };
   },
@@ -139,9 +158,9 @@ export default defineComponent({
 <style scoped>
 .material-input {
   color: var(--color-gray);
-  display: block;
+  display: flex;
   position: relative;
-  font-size: 14px;
+  font-size: inherit;
   box-sizing: border-box;
   margin-top: 0.5rem;
   padding-top: 0.75rem;
@@ -150,12 +169,13 @@ export default defineComponent({
   background-color: transparent;
 }
 .material-input.is-focus {
-  border-bottom-color: var(--color-primary);
+  border-bottom-color: var(--color-blue);
 }
-.material-input_input,
-.material-input_textarea {
+.material-input-input,
+.material-input-textarea {
   color: var(--color-gray-700);
   width: 100%;
+  outline: none;
   min-height: 1.25rem;
   transition: border-bottom-color var(--transition-default);
   box-sizing: border-box;
@@ -163,16 +183,24 @@ export default defineComponent({
   padding-top: 0.25rem;
   border-bottom: 1px solid transparent;
   padding-bottom: 0.25rem;
-  background-color: inherit;
+  background-color: transparent;
+  border-block-end-width: 0;
+  border-inline-end-width: 0;
+  border-block-start-width: 0;
+  border-inline-start-width: 0;
 }
-.material-input.is-focus .material-input_input,
-.material-input.is-focus .material-input_textarea {
-  border-bottom-color: var(--color-primary);
+.material-input.is-focus .material-input-input,
+.material-input.is-focus .material-input-textarea {
+  border-bottom-color: var(--color-blue);
 }
-.material-input_label {
+.material-input.is-disabled .material-input-input,
+.material-input.is-disabled .material-input-textarea {
+  color: var(--color-gray);
+}
+.material-input-label {
   top: calc(100% - 1.375rem);
   left: 0.5rem;
-  color: inherit;
+  color: var(--color-gray-700);
   position: absolute;
   transition:
     top var(--transition-default),
@@ -182,12 +210,16 @@ export default defineComponent({
   line-height: 1;
   background-color: transparent;
 }
-.material-input.is-focus .material-input_label {
-  color: var(--color-primary-600);
-}
-.material-input.is-active .material-input_label {
+.material-input.is-active .material-input-label {
   top: 0;
   left: 0;
+  color: var(--color-gray-900);
   font-size: 0.75rem;
+}
+.material-input.is-focus .material-input-label {
+  color: var(--color-blue);
+}
+.material-input.is-disabled .material-input-label {
+  color: var(--color-gray-300);
 }
 </style>

@@ -1,30 +1,36 @@
-import type { Ref } from "vue";
-import type Provider from "@/provider/type";
-
-import { createApp } from "vue";
 import "@/style/index.css";
+import { createApp } from "vue";
 import App from "@/App.vue";
 import { getProviderRef } from "@/provider";
+import sleep from "@/utils/sleep";
 import querySelector from "@/utils/querySelector";
 
-const init = (providerRef: Ref<Provider>) => {
-  querySelector(providerRef.value.rootElementInsertTarget).then((target) =>
-    querySelector("#" + providerRef.value.rootElementId).catch(() => {
-      const app = createApp(App);
-      app.provide("providerRef", providerRef);
-      app.mount(
-        (() => {
-          const root = document.createElement("div");
-          root.setAttribute("id", providerRef.value.rootElementId);
-          target[providerRef.value.rootElementInsertMethod](root);
-          return root;
-        })()
-      );
-    })
-  );
+const loop = () => {
+  const providerRef = getProviderRef();
+
+  if (!providerRef?.value) {
+    return;
+  }
+
+  const target = querySelector(providerRef.value.rootElementInsertTarget);
+
+  const rootElement = querySelector("#" + providerRef.value.rootElementId);
+
+  if (target && !rootElement) {
+    const app = createApp(App);
+    app.provide("providerRef", providerRef);
+    app.mount(
+      (() => {
+        const root = document.createElement("div");
+        root.setAttribute("id", providerRef.value.rootElementId);
+        target[providerRef.value.rootElementInsertMethod](root);
+        return root;
+      })()
+    );
+  }
 };
 
-setInterval(
-  () => getProviderRef().then((providerRef) => init(providerRef)),
-  300
-);
+while (loop) {
+  loop();
+  await sleep(300);
+}

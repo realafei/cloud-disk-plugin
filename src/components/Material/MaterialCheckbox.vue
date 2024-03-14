@@ -69,10 +69,18 @@ export default defineComponent({
 .material-checkbox {
   cursor: pointer;
   display: inline-flex;
+  font-size: inherit;
   min-width: 1em;
   min-height: 1em;
   white-space: nowrap;
   align-items: center;
+  --primary-color: var(--color-blue);
+}
+.material-checkbox.is-disabled {
+  --primary-color: var(--color-gray);
+}
+.material-checkbox.is-disabled .material-checkbox-label {
+  color: var(--color-gray-300);
 }
 .material-radio + .material-checkbox,
 .material-checkbox + .material-checkbox {
@@ -91,10 +99,10 @@ export default defineComponent({
   display: block;
   box-sizing: border-box;
   transition: var(--transition-all);
-  border-top: 2px solid var(--color-primary);
-  border-left: 2px solid var(--color-primary);
-  border-right: 2px solid var(--color-primary);
-  border-bottom: 2px solid var(--color-primary);
+  border-top: 2px solid var(--primary-color);
+  border-left: 2px solid var(--primary-color);
+  border-right: 2px solid var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
   border-radius: 2px;
   background-color: transparent;
 }
@@ -108,21 +116,22 @@ export default defineComponent({
   position: absolute;
 }
 .material-checkbox:not(.is-indeterminate) .material-checkbox-input::after {
-  top: 0;
-  left: 30%;
+  top: 30%;
+  left: 50%;
   width: 40%;
-  height: 80%;
+  height: 75%;
   content: "";
   display: block;
   position: absolute;
-  transform: rotate(40deg);
+  transform: rotate(45deg);
   box-sizing: border-box;
   transition: var(--transition-all);
   border-right: 2px solid transparent;
   border-bottom: 2px solid transparent;
+  transform-origin: 100% 0;
 }
 .material-checkbox.is-checked .material-checkbox-input::before {
-  background-color: var(--color-primary);
+  background-color: var(--primary-color);
 }
 .material-checkbox.is-checked:not(.is-indeterminate)
   .material-checkbox-input::after {
@@ -131,7 +140,7 @@ export default defineComponent({
 }
 
 .material-checkbox.is-indeterminate .material-checkbox-input::before {
-  background-color: var(--color-primary);
+  background-color: var(--primary-color);
 }
 
 .material-checkbox.is-indeterminate .material-checkbox-input::after {

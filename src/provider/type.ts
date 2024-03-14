@@ -18,10 +18,25 @@ export abstract class Provider {
 
   // 显示加载
   public isLoading: boolean = false;
+  // 更新加载中
+  public isUpdateLoading: boolean = false;
+  // 控制加载中
+  public isControlLoading: boolean = false;
+  // 预览加载中
+  public isPreviewLoading: boolean = false;
 
   // 主面板显示控制
   public visible: boolean = false;
   public setVisible(val: boolean = false) {
+    if (
+      !val &&
+      (this.isLoading ||
+        this.isUpdateLoading ||
+        this.isControlLoading ||
+        this.isPreviewLoading)
+    ) {
+      return false;
+    }
     this.visible = val;
     if (val) {
       this._updateOriginList();
@@ -32,6 +47,8 @@ export abstract class Provider {
   public replaceParams: ReplaceParams = new ReplaceParams(() =>
     this._onReplaceParamsUpdate.call(this)
   );
+  // 替换参数禁用
+  public replaceParamsDisabled: boolean = false;
   // 替换参数更新回调函数
   private _onReplaceParamsUpdate() {
     this._updateCurrentList();
@@ -47,11 +64,19 @@ export abstract class Provider {
   protected abstract getOriginList(): Promise<IOriginListItem[]>;
   // 更新原始文件列表数据
   private _updateOriginList(): void {
-    this.getOriginList().then((res) => {
-      this.originList = res;
-      this._uncheckedList = new Set();
-      this._updateCurrentList();
-    });
+    this.isLoading = true;
+    this._uncheckedList = new Set();
+    this.getOriginList()
+      .then((res) => {
+        this.isLoading = false;
+        this.originList = res;
+        this._updateCurrentList();
+      })
+      .catch(() => {
+        this.isLoading = false;
+        this.originList = [];
+        this._updateCurrentList();
+      });
   }
 
   // 当前文件列表数据
@@ -67,10 +92,11 @@ export abstract class Provider {
       return {
         id: item.id,
         ext: item.ext,
+        status: "none",
         isError: false,
         fileName: item.fileName,
         isChange: false,
-        isMatched: false,
+        isMatched: true,
         isChecked: !this._uncheckedList.has(item.id),
         isLoading: false,
         oldFileName: item.fullFileName,
@@ -94,7 +120,7 @@ export abstract class Provider {
             newFileName += episode;
           }
           newFileName += "." + item.ext;
-          item.newFileName = newFileName;
+          item.newFileName = newFileName.trim();
           this._listItemGeneralMethod(item, newFileNameSet);
         });
       }
@@ -120,8 +146,10 @@ export abstract class Provider {
                 );
                 newFileName +=
                   (newFileName ? ".E" : "E") + complementZero(index + 1);
-                newFileName += "." + item.ext;
-                item.newFileName = newFileName;
+                if (newFileName) {
+                  newFileName += "." + item.ext;
+                }
+                item.newFileName = newFileName.trim();
                 this._listItemGeneralMethod(item, newFileNameSet);
               }
             } else {
@@ -143,7 +171,10 @@ export abstract class Provider {
     this._updateHasError();
     this._updateHasChange();
     this._updateHasCheckedAll();
+    this._updateMatchedCount();
+    this._updateStatusCount();
     this._updateShouldContinue();
+    this._updateStatusList();
     this._emitCurrentListUpdateHandler();
   }
   // 文件列表项通用处理
@@ -208,10 +239,26 @@ export abstract class Provider {
 
   // 是否有错误
   public hasError: boolean = false;
+  private _errorCount: number = 0;
   private _updateHasError(): void {
-    this.hasError = this._currentList.some(
-      (item) => item.isChecked && item.isError
-    );
+    let errorCount = 0;
+    this._currentList.forEach((item) => {
+      if (item.isChecked && item.isError) {
+        errorCount++;
+      }
+    });
+    this.hasError = errorCount > 0;
+    this._errorCount = errorCount;
+  }
+  // 匹配的数量
+  private _matchedCount: number = 0;
+  private _updateMatchedCount(): void {
+    this._matchedCount = this._currentList.reduce((res, item) => {
+      if (item.isChecked && item.isMatched) {
+        res += 1;
+      }
+      return res;
+    }, 0);
   }
   // 是否有变更
   public hasChange: boolean = false;
@@ -234,6 +281,93 @@ export abstract class Provider {
   private _updateShouldContinue(): void {
     this.shouldContinue = !this.hasError && this.hasChange;
   }
+  // 状态计数
+  private _pendingStatusCount: number = 0;
+  private _successStatusCount: number = 0;
+  private _failStatusCount: number = 0;
+  protected _updateStatusCount(): void {
+    let pendingStatusCount = 0;
+    let successStatusCount = 0;
+    let failStatusCount = 0;
+    this._currentList.forEach((item) => {
+      if (item.status === "success") {
+        successStatusCount++;
+      } else if (item.status === "fail") {
+        failStatusCount++;
+      } else if (item.status === "pending") {
+        pendingStatusCount++;
+      }
+    });
+    this._pendingStatusCount = pendingStatusCount;
+    this._successStatusCount = successStatusCount;
+    this._failStatusCount = failStatusCount;
+  }
+
+  public statusList: IStatusList[] = [];
+  protected _updateStatusList() {
+    const result: IStatusList[] = [];
+    if (!this._currentList.length) {
+      result.push({ message: "❌ 无文件" });
+    } else {
+      if (this.isUpdateLoading) {
+        if (this._pendingStatusCount) {
+          result.push({
+            message: `加载中(${this._pendingStatusCount})`,
+            className: "blue",
+          });
+        }
+        if (this._successStatusCount) {
+          result.push({
+            message: `成功(${this._successStatusCount})`,
+            className: "green",
+          });
+        }
+        if (this._failStatusCount) {
+          result.push({
+            message: `失败(${this._failStatusCount})`,
+            className: "red",
+          });
+        }
+      } else if (this.shouldContinue) {
+        result.push({ message: "✅ 准备就绪", className: "green" });
+      }
+      if (this.hasError) {
+        result.push({
+          message: `❌ 文件名重复(${this._errorCount})`,
+          className: "red",
+        });
+      }
+      if (!this.hasChange) {
+        result.push({ message: "❕ 暂无改动", className: "yellow" });
+      }
+      const checked = this._currentList.length - this._uncheckedList.size;
+      if (this._uncheckedList.size && checked) {
+        if (this._uncheckedList.size > checked) {
+          result.push({ message: `已选中(${checked})`, className: "blue" });
+        } else {
+          result.push({
+            message: `未选中(${this._uncheckedList.size})`,
+            className: "yellow",
+          });
+        }
+      }
+      const unmatchedCount = checked - this._matchedCount;
+      if (unmatchedCount && this._matchedCount) {
+        if (unmatchedCount > this._matchedCount) {
+          result.push({
+            message: `已匹配(${this._matchedCount})`,
+            className: "blue",
+          });
+        } else {
+          result.push({
+            message: `未匹配(${unmatchedCount})`,
+            className: "yellow",
+          });
+        }
+      }
+    }
+    this.statusList = result;
+  }
 
   // 刷新数据
   protected abstract refresh(): Promise<any>;
@@ -244,18 +378,26 @@ export abstract class Provider {
     if (!this.shouldContinue) {
       return;
     }
-    this.isLoading = true;
+    this.isUpdateLoading = true;
+    this.replaceParamsDisabled = true;
+    this._updateStatusList();
     const data = this.currentList.filter(
       (item) => item.isChecked && item.isChange && !item.isError
     );
     this.renameRequest(data)
       .then(() => {
+        this.visible = false;
         this._resetReplaceParams();
-        // return this.refresh();
+      })
+      .catch(() => {
+        this.refresh().then(() => {
+          this._updateOriginList();
+        });
       })
       .finally(() => {
-        this.visible = false;
-        this.isLoading = false;
+        this.isUpdateLoading = false;
+        this.replaceParamsDisabled = false;
+        this._updateStatusList();
       });
   }
   // 重置
@@ -364,9 +506,12 @@ export interface IOriginListItem {
   fullFileName: string;
 }
 
+type IListItemStatus = "none" | "ready" | "pending" | "success" | "fail";
+
 export interface IListItem {
   id: string;
   ext: string;
+  status: IListItemStatus;
   isError: boolean;
   fileName: string;
   isChange: boolean;
@@ -375,6 +520,11 @@ export interface IListItem {
   isLoading: boolean;
   oldFileName: string;
   newFileName: string;
+}
+
+export interface IStatusList {
+  message: string;
+  className?: string;
 }
 
 export default Provider;

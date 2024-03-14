@@ -1,23 +1,18 @@
 <template>
   <div class="material-loading">
-    <!-- <div class="material-loading-spinner"></div> -->
-    <svg class="material-loading-spinner" viewBox="0 0 50 50">
-      <circle
-        class="material-loading-spinner-path"
-        cx="25"
-        cy="25"
-        r="20"
-        fill="none"
-      ></circle>
-    </svg>
+    <icon-loading class="material-loading-icon"></icon-loading>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import IconLoading from "@/components/Icon/Loading.vue";
 
 export default defineComponent({
   name: "MaterialLoading",
+  components: {
+    IconLoading,
+  },
 });
 </script>
 
@@ -41,40 +36,7 @@ export default defineComponent({
   justify-content: center;
   background-color: rgba(255, 255, 255, 0.9);
 }
-.material-loading-spinner {
-  width: 2em;
-  height: 2em;
-  animation: spin 1s linear infinite;
-}
-.material-loading-spinner-path {
-  stroke: var(--color-primary);
-  animation: loading-dash 1.5s ease-in-out infinite;
-  stroke-width: 0.2em;
-  stroke-linecap: round;
-  stroke-dasharray: 90, 150;
-  stroke-dashoffset: 0;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(1turn);
-  }
-}
-
-@keyframes loading-dash {
-  0% {
-    stroke-dasharray: 1, 200;
-    stroke-dashoffset: 0;
-  }
-
-  50% {
-    stroke-dasharray: 90, 150;
-    stroke-dashoffset: -40px;
-  }
-
-  100% {
-    stroke-dasharray: 90, 150;
-    stroke-dashoffset: -120px;
-  }
+.material-loading-icon {
+  font-size: calc(var(--font-size) * 2);
 }
 </style>

@@ -1,3 +1,5 @@
+import type { Ref } from "vue";
+
 import { ref, onMounted } from "vue";
 
 const regexp = /@version\s+(.+)\n/;
@@ -31,8 +33,15 @@ const useVersion = () => {
     currentVersion,
     newVersion,
     hasNewVersion,
-    updateUrl
+    updateUrl,
   };
 };
+
+export interface IVersion {
+  currentVersion: string;
+  newVersion: Ref<string>;
+  hasNewVersion: Ref<boolean>;
+  updateUrl: string;
+}
 
 export default useVersion;

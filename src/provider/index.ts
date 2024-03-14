@@ -6,32 +6,35 @@ import ProviderAli from "./lib/ali";
 import ProviderBaidu from "./lib/baidu";
 import ProviderQuark from "./lib/quark";
 
-export const getProvider = ((instance?: Provider) => {
-  return (): Promise<Provider> => {
-    if (instance) {
-      return Promise.resolve(instance);
-    }
-    if (ProviderAli.test()) {
-      instance = new ProviderAli();
-    } else if (ProviderBaidu.test()) {
-      instance = new ProviderBaidu();
-    } else if (ProviderQuark.test()) {
-      instance = new ProviderQuark();
-    }
-    return instance ? Promise.resolve(instance) : Promise.reject();
-  };
-})();
+export let provider: Provider;
+export const getProvider = (): Provider | undefined => {
+  if (ProviderAli.test()) {
+    provider = provider instanceof ProviderAli ? provider : new ProviderAli();
+  } else if (ProviderBaidu.test()) {
+    provider =
+      provider instanceof ProviderBaidu ? provider : new ProviderBaidu();
+  } else if (ProviderQuark.test()) {
+    provider =
+      provider instanceof ProviderQuark ? provider : new ProviderQuark();
+  } else {
+    return undefined;
+  }
+  return provider;
+};
 
-export const getProviderRef = ((instanceRef?: Ref<Provider>) => {
-  return (): Promise<Ref<Provider>> => {
-    if (!instanceRef) {
-      return getProvider().then((res: Provider) => {
-        instanceRef = ref<Provider>(res) as Ref<Provider>;
-        return instanceRef;
-      });
-    }
-    return Promise.resolve(instanceRef);
-  };
-})();
+export let providerRef: Ref<Provider | undefined>;
+export const getProviderRef = (): Ref<Provider | undefined> => {
+  const instance = getProvider();
+
+  if (!providerRef) {
+    providerRef = ref();
+  }
+
+  if ((!providerRef.value && instance) || (providerRef.value && !instance)) {
+    providerRef.value = instance;
+  }
+
+  return providerRef as Ref<Provider | undefined>;
+};
 
 export default getProvider;

@@ -1,27 +1,44 @@
-export const querySelector = (
-  payload: string,
-  count: number = 0,
+import { isBoolean, isUndefined } from "@/utils/is";
+
+function querySelector(selectors: string): Element | null;
+function querySelector(
+  selectors: string,
+  isPromise: boolean | number,
+  timeout?: number
+): Promise<Element>;
+function querySelector(
+  selectors: string,
+  isPromise?: boolean | number,
   timeout: number = 100
-): Promise<Element> => {
-  let element = document.querySelector(payload);
-  if (element) {
+): Promise<Element> | Element | null {
+  let element = document.querySelector(selectors);
+  if (isUndefined(isPromise)) {
+    return element;
+  } else if (isBoolean(isPromise)) {
+    if (isPromise) {
+      return element
+        ? Promise.resolve(element)
+        : Promise.reject(selectors + " is not found");
+    }
+    return element;
+  } else if (element) {
     return Promise.resolve(element);
-  } else if (count > 0) {
+  } else if (isPromise > 0) {
     return new Promise((resolve, reject) => {
       const timer = window.setTimeout(() => {
-        element = document.querySelector(payload);
+        element = document.querySelector(selectors);
         if (element) {
           resolve(element);
           window.clearInterval(timer);
-        } else if (--count <= 0) {
-          reject();
+        } else if (--(isPromise as number) <= 0) {
+          reject(selectors + " is not found");
           window.clearInterval(timer);
         }
       }, timeout);
     });
   } else {
-    return Promise.reject();
-  }
-};
+    return Promise.reject(selectors + " is not found");
+  };
+}
 
 export default querySelector;

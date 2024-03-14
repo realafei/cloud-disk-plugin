@@ -2,9 +2,9 @@
   <label
     class="material-radio"
     :class="{
+      'is-checked': isChecked,
       'is-disabled': disabled,
       'is-readonly': readonly,
-      'is-checked': isChecked,
       [type]: true,
     }"
     @change="onChange"
@@ -72,6 +72,8 @@ export default defineComponent({
 <style scoped>
 .material-radio {
   cursor: pointer;
+  font-size: inherit;
+  --primary-color: var(--color-blue);
 }
 .material-radio.radio {
   display: inline-flex;
@@ -80,7 +82,12 @@ export default defineComponent({
   white-space: nowrap;
   align-items: center;
 }
-
+.material-radio.is-disabled {
+  --primary-color: var(--color-gray);
+}
+.material-radio.is-disabled .material-radio-label {
+  color: var(--color-gray-300);
+}
 .material-checkbox + .material-radio,
 .material-radio.radio + .material-radio.radio {
   margin-left: 0.5em;
@@ -94,7 +101,7 @@ export default defineComponent({
 .material-radio.radio .material-radio-input::before {
   width: 100%;
   height: 100%;
-  border: 2px solid var(--color-primary);
+  border: 2px solid var(--primary-color);
   content: "";
   display: block;
   box-sizing: border-box;
@@ -114,7 +121,7 @@ export default defineComponent({
   box-sizing: border-box;
   transition: var(--transition-all);
   border-radius: 50%;
-  background-color: var(--color-primary);
+  background-color: var(--primary-color);
 }
 .material-radio.radio.is-checked .material-radio-input::after {
   width: 50%;
@@ -127,8 +134,8 @@ export default defineComponent({
   height: 0;
   margin: 0;
   z-index: -1;
-  outline: none;
   opacity: 0;
+  outline: none;
   position: absolute;
 }
 .material-radio.radio .material-radio-label {
@@ -139,7 +146,7 @@ export default defineComponent({
   color: var(--color-gray-900);
   height: auto;
   border: 1px solid var(--color-gray-300);
-  padding: 8px 15px;
+  padding: 0.5em 1em;
   transition: var(--transition-all);
   line-height: 1;
   border-radius: var(--gutter);
@@ -157,8 +164,8 @@ export default defineComponent({
 }
 .material-radio.button.is-checked {
   color: var(--color-gray-50);
-  border-color: var(--color-primary);
-  background-color: var(--color-primary);
+  border-color: var(--primary-color);
+  background-color: var(--primary-color);
 }
 .material-radio.button .material-radio-input-original {
   top: 0;
@@ -167,8 +174,8 @@ export default defineComponent({
   height: 0;
   margin: 0;
   z-index: -1;
-  outline: none;
   opacity: 0;
+  outline: none;
   position: absolute;
 }
 </style>
