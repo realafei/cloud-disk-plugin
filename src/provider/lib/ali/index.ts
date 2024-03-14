@@ -4,7 +4,7 @@ import type {
   TRootElementInsertMethod,
 } from "@/provider/type";
 
-import { defineAsyncComponent } from "vue";
+import EnterComponent from "./EnterComponent.vue";
 import Provider from "@/provider/type";
 import querySelector from "@/utils/querySelector";
 import fileNameParse from "@/utils/fileNameParse";
@@ -45,10 +45,6 @@ const findReactFiberNode = (
   }
 };
 
-const EnterComponent = defineAsyncComponent(
-  () => import("./EnterComponent.vue")
-);
-
 export default class ProviderAli extends Provider {
   static test = () =>
     /^https:\/\/www\.ali(pan|yundrive)\.com\/drive\/file\/(backup|resource)/.test(
@@ -60,7 +56,7 @@ export default class ProviderAli extends Provider {
   rootElementInsertTarget = "[class^=nav-tab-content--]";
   rootElementInsertMethod: TRootElementInsertMethod = "append";
 
-  EnterComponent = () => EnterComponent;
+  EnterComponent = EnterComponent;
 
   async getOriginList() {
     const rootReactContainer = await this._getRootReactContainer();

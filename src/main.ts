@@ -30,7 +30,7 @@ const loop = () => {
   }
 };
 
-while (loop) {
+while (window?.parent === window) {
   loop();
   await sleep(300);
 }

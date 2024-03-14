@@ -22,13 +22,10 @@ export const getProvider = (): Provider | undefined => {
   return provider;
 };
 
-export let providerRef: Ref<Provider | undefined>;
+export const providerRef: Ref<Provider | undefined> = ref();
+
 export const getProviderRef = (): Ref<Provider | undefined> => {
   const instance = getProvider();
-
-  if (!providerRef) {
-    providerRef = ref();
-  }
 
   if ((!providerRef.value && instance) || (providerRef.value && !instance)) {
     providerRef.value = instance;

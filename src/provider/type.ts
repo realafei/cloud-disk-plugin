@@ -1,3 +1,4 @@
+import type { Component } from "vue";
 import complementZero from "@/utils/complementZero";
 
 export abstract class Provider {
@@ -14,7 +15,7 @@ export abstract class Provider {
   // 根元素插入方式
   public abstract rootElementInsertMethod: TRootElementInsertMethod;
   // 入口组件
-  public abstract EnterComponent: () => any;
+  public abstract EnterComponent: Component;
 
   // 显示加载
   public isLoading: boolean = false;

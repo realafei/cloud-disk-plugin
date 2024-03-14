@@ -25,14 +25,14 @@ function querySelector(
     return Promise.resolve(element);
   } else if (isPromise > 0) {
     return new Promise((resolve, reject) => {
-      const timer = window.setTimeout(() => {
+      const timer = setTimeout(() => {
         element = document.querySelector(selectors);
         if (element) {
           resolve(element);
-          window.clearInterval(timer);
+          clearInterval(timer);
         } else if (--(isPromise as number) <= 0) {
           reject(selectors + " is not found");
-          window.clearInterval(timer);
+          clearInterval(timer);
         }
       }, timeout);
     });

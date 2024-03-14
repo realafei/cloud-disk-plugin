@@ -4,15 +4,12 @@ import type {
   TRootElementInsertMethod,
 } from "@/provider/type";
 
-import { defineAsyncComponent } from "vue";
+import EnterComponent from "./EnterComponent.vue";
 import Provider from "@/provider/type";
 import sleep from "@/utils/sleep";
 import querySelector from "@/utils/querySelector";
 import fileNameParse from "@/utils/fileNameParse";
 
-const EnterComponent = defineAsyncComponent(
-  () => import("./EnterComponent.vue")
-);
 
 export default class ProviderBaidu extends Provider {
   static test = () =>
@@ -25,7 +22,7 @@ export default class ProviderBaidu extends Provider {
   rootElementInsertTarget = ".wp-s-aside-nav__main-top";
   rootElementInsertMethod: TRootElementInsertMethod = "append";
 
-  EnterComponent = () => EnterComponent;
+  EnterComponent = EnterComponent;
 
   async getOriginList() {
     const vue = this._getVue();

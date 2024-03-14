@@ -24,7 +24,7 @@ export default defineComponent({
 
     const providerRef = inject<Ref<Provider>>("providerRef");
 
-    const EnterComponent = computed(() => providerRef?.value?.EnterComponent());
+    const EnterComponent = computed(() => providerRef?.value?.EnterComponent);
 
     return {
       EnterComponent,
