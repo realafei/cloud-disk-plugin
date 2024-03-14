@@ -16,7 +16,7 @@
 
 阿里云盘入口
 
-![阿里云盘入口](https://cdn.jsdelivr.net/gh/realafei/cloud-disk-plugin/image/readme/screenshot_enter_button_baidu.png)
+![阿里云盘入口](https://cdn.jsdelivr.net/gh/realafei/cloud-disk-plugin/image/readme/screenshot_enter_button_ali.png)
 
 ## 使用方法
 
