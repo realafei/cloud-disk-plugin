@@ -1,4 +1,6 @@
 import type { Component } from "vue";
+
+import message from "@/utils/message";
 import complementZero from "@/utils/complementZero";
 
 export abstract class Provider {
@@ -15,7 +17,7 @@ export abstract class Provider {
   // 根元素插入方式
   public abstract rootElementInsertMethod: TRootElementInsertMethod;
   // 入口组件
-  public abstract EnterComponent: Component;
+  public abstract EnterComponent: () => Component;
 
   // 显示加载
   public isLoading: boolean = false;
@@ -94,7 +96,9 @@ export abstract class Provider {
         id: item.id,
         ext: item.ext,
         status: "none",
+        isEmpty: false,
         isError: false,
+        isRepeat: false,
         fileName: item.fileName,
         isChange: false,
         isMatched: true,
@@ -169,21 +173,18 @@ export abstract class Provider {
     }
 
     this._currentList = result;
-    this._updateHasError();
-    this._updateHasChange();
-    this._updateHasCheckedAll();
-    this._updateMatchedCount();
-    this._updateStatusCount();
-    this._updateShouldContinue();
-    this._updateStatusList();
+    this._updateStatus();
     this._emitCurrentListUpdateHandler();
   }
   // 文件列表项通用处理
   private _listItemGeneralMethod(item: IListItem, newFileNameSet: Set<string>) {
     item.isChange = item.oldFileName !== item.newFileName;
-    item.isError =
+    item.isEmpty = item.isChecked && !item.newFileName;
+    item.isRepeat =
       item.isChecked &&
-      (!item.newFileName || newFileNameSet.has(item.newFileName));
+      !!item.newFileName &&
+      newFileNameSet.has(item.newFileName);
+    item.isError = item.isEmpty || item.isRepeat;
     item.isChecked && newFileNameSet.add(item.newFileName);
   }
 
@@ -238,59 +239,50 @@ export abstract class Provider {
     this._updateCurrentList();
   }
 
+  // 空名计数
+  private _emptyCount: number = 0;
+  // 错误计数
+  private _errorCount: number = 0;
+  // 重复计数
+  private _repeatCount: number = 0;
+  // 变更计数
+  private _changeCount: number = 0;
+  // 匹配计数
+  private _matchedCount: number = 0;
+  // 状态计数
+  private _failStatusCount: number = 0;
+  private _pendingStatusCount: number = 0;
+  private _successStatusCount: number = 0;
   // 是否有错误
   public hasError: boolean = false;
-  private _errorCount: number = 0;
-  private _updateHasError(): void {
-    let errorCount = 0;
-    this._currentList.forEach((item) => {
-      if (item.isChecked && item.isError) {
-        errorCount++;
-      }
-    });
-    this.hasError = errorCount > 0;
-    this._errorCount = errorCount;
-  }
-  // 匹配的数量
-  private _matchedCount: number = 0;
-  private _updateMatchedCount(): void {
-    this._matchedCount = this._currentList.reduce((res, item) => {
-      if (item.isChecked && item.isMatched) {
-        res += 1;
-      }
-      return res;
-    }, 0);
-  }
   // 是否有变更
   public hasChange: boolean = false;
-  private _updateHasChange(): void {
-    this.hasChange = this._currentList.some(
-      (item) => item.isChecked && item.isChange
-    );
-  }
   // 是否全选
   public hasCheckedAll: boolean = false;
   // 是否全不选
   public hasUncheckedAll: boolean = false;
-  private _updateHasCheckedAll(): void {
-    this.hasCheckedAll = this._uncheckedList.size === 0;
-    this.hasUncheckedAll =
-      this._uncheckedList.size === this._currentList.length;
-  }
   // 是否可继续
   public shouldContinue: boolean = false;
-  private _updateShouldContinue(): void {
-    this.shouldContinue = !this.hasError && this.hasChange;
-  }
-  // 状态计数
-  private _pendingStatusCount: number = 0;
-  private _successStatusCount: number = 0;
-  private _failStatusCount: number = 0;
-  protected _updateStatusCount(): void {
+  // 状态列表
+  public statusList: IStatusList[] = [];
+  protected _updateStatus(): void {
+    let emptyCount = 0;
+    let errorCount = 0;
+    let repeatCount = 0;
+    let changeCount = 0;
+    let matchedCount = 0;
+    let failStatusCount = 0;
     let pendingStatusCount = 0;
     let successStatusCount = 0;
-    let failStatusCount = 0;
+
     this._currentList.forEach((item) => {
+      if (item.isChecked) {
+        item.isEmpty && emptyCount++;
+        item.isError && errorCount++;
+        item.isRepeat && repeatCount++;
+        item.isChange && changeCount++;
+        item.isMatched && matchedCount++;
+      }
       if (item.status === "success") {
         successStatusCount++;
       } else if (item.status === "fail") {
@@ -299,16 +291,31 @@ export abstract class Provider {
         pendingStatusCount++;
       }
     });
+    this._emptyCount = emptyCount;
+    this._errorCount = errorCount;
+    this._repeatCount = repeatCount;
+    this._changeCount = changeCount;
+    this._matchedCount = matchedCount;
+    this._failStatusCount = failStatusCount;
     this._pendingStatusCount = pendingStatusCount;
     this._successStatusCount = successStatusCount;
-    this._failStatusCount = failStatusCount;
+
+    this.hasError = this._errorCount > 0;
+    this.hasChange = this._changeCount > 0;
+
+    this.shouldContinue = !this.hasError && this.hasChange;
+
+    this.hasCheckedAll = this._uncheckedList.size === 0;
+    this.hasUncheckedAll =
+      this._uncheckedList.size === this._currentList.length;
+
+    this._updateStatusList();
   }
 
-  public statusList: IStatusList[] = [];
-  protected _updateStatusList() {
+  private _updateStatusList() {
     const result: IStatusList[] = [];
     if (!this._currentList.length) {
-      result.push({ message: "❌ 无文件" });
+      result.push({ message: "❌" }, { message: " 无文件" });
     } else {
       if (this.isUpdateLoading) {
         if (this._pendingStatusCount) {
@@ -330,16 +337,34 @@ export abstract class Provider {
           });
         }
       } else if (this.shouldContinue) {
-        result.push({ message: "✅ 准备就绪", className: "green" });
-      }
-      if (this.hasError) {
-        result.push({
-          message: `❌ 文件名重复(${this._errorCount})`,
-          className: "red",
-        });
+        result.push(
+          { message: "✅" },
+          { message: "准备就绪", className: "green" }
+        );
       }
       if (!this.hasChange) {
-        result.push({ message: "❕ 暂无改动", className: "yellow" });
+        result.push(
+          { message: "❕" },
+          { message: "暂无改动", className: "yellow" }
+        );
+      }
+      if (this._emptyCount) {
+        result.push(
+          { message: "❌" },
+          {
+            message: `文件名为空(${this._emptyCount})`,
+            className: "red",
+          }
+        );
+      }
+      if (this._repeatCount) {
+        result.push(
+          { message: "❌" },
+          {
+            message: `文件名重复(${this._repeatCount})`,
+            className: "red",
+          }
+        );
       }
       const checked = this._currentList.length - this._uncheckedList.size;
       if (this._uncheckedList.size && checked) {
@@ -387,6 +412,7 @@ export abstract class Provider {
     );
     this.renameRequest(data)
       .then(() => {
+        this.type !== "baidu" && message.success("批量重命名成功");
         this.visible = false;
         this._resetReplaceParams();
       })
@@ -513,7 +539,9 @@ export interface IListItem {
   id: string;
   ext: string;
   status: IListItemStatus;
+  isEmpty: boolean;
   isError: boolean;
+  isRepeat: boolean;
   fileName: string;
   isChange: boolean;
   isMatched: boolean;

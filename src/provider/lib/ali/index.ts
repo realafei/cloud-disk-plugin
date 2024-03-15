@@ -8,42 +8,7 @@ import EnterComponent from "./EnterComponent.vue";
 import Provider from "@/provider/type";
 import querySelector from "@/utils/querySelector";
 import fileNameParse from "@/utils/fileNameParse";
-
-interface IReactFiberNode {
-  child?: IReactFiberNode;
-  return?: IReactFiberNode;
-  sibling?: IReactFiberNode;
-  pendingProps: any;
-}
-
-interface ICheckReactFiberNode {
-  (node: IReactFiberNode): any | boolean | undefined | void;
-}
-
-const findReactFiberNode = (
-  node: IReactFiberNode,
-  check: ICheckReactFiberNode
-): IReactFiberNode | undefined => {
-  const list: IReactFiberNode[] = [node];
-  while (list.length) {
-    const item = list.shift() as IReactFiberNode;
-    if (check(item)) {
-      return item;
-    } else {
-      if (item.child) {
-        list.push(item.child);
-      }
-      if (item.sibling) {
-        list.push(item.sibling);
-      }
-      // let next = item;
-      // while (next.sibling) {
-      //   next = next.sibling;
-      //   list.push(next);
-      // }
-    }
-  }
-};
+import { findReactFiberNode, getRootReactContainer } from "@/utils/reactFiber";
 
 export default class ProviderAli extends Provider {
   static test = () =>
@@ -56,10 +21,15 @@ export default class ProviderAli extends Provider {
   rootElementInsertTarget = "[class^=nav-tab-content--]";
   rootElementInsertMethod: TRootElementInsertMethod = "append";
 
-  EnterComponent = EnterComponent;
+  EnterComponent = () => EnterComponent;
+
+  private _rootReactContainerSelectors = "#root";
 
   async getOriginList() {
-    const rootReactContainer = await this._getRootReactContainer();
+    const rootReactContainer = await getRootReactContainer(
+      this._rootReactContainerSelectors,
+      true
+    );
 
     const reactFiberNode = findReactFiberNode(
       rootReactContainer,
@@ -98,7 +68,10 @@ export default class ProviderAli extends Provider {
   }
 
   async renameRequest(data: IListItem[]) {
-    const rootReactContainer = await this._getRootReactContainer();
+    const rootReactContainer = await getRootReactContainer(
+      this._rootReactContainerSelectors,
+      true
+    );
 
     const reactFiberNode = findReactFiberNode(
       rootReactContainer,
@@ -145,15 +118,17 @@ export default class ProviderAli extends Provider {
       } catch (error) {
         item.status = "fail";
       }
-      this._updateStatusCount();
-      this._updateStatusList();
+      this._updateStatus();
     }
 
     return Promise.resolve();
   }
 
   async refresh() {
-    const rootReactContainer = await this._getRootReactContainer();
+    const rootReactContainer = await getRootReactContainer(
+      this._rootReactContainerSelectors,
+      true
+    );
 
     const reactFiberNode = findReactFiberNode(
       rootReactContainer,
@@ -176,25 +151,5 @@ export default class ProviderAli extends Provider {
     const reload = reactFiberNode.pendingProps.localStore.listModel.reload;
 
     return reload();
-  }
-
-  private _rootReactContainer?: IReactFiberNode;
-  private _getRootReactContainer(): Promise<IReactFiberNode> {
-    if (this._rootReactContainer) {
-      return Promise.resolve(this._rootReactContainer);
-    }
-    return querySelector("#root", true).then((res: Element) => {
-      const keys = Object.keys(res) as Array<keyof Element>;
-      const reactContainerKey = keys.find((item: keyof Element) =>
-        item.startsWith("__reactContainer")
-      );
-      if (!reactContainerKey) {
-        return Promise.reject();
-      }
-      this._rootReactContainer = res[
-        reactContainerKey
-      ] as unknown as IReactFiberNode;
-      return this._rootReactContainer;
-    });
   }
 }

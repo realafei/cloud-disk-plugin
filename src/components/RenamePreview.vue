@@ -200,7 +200,7 @@ export default defineComponent({
   grid-gap: var(--gutter);
   font-size: var(--font-size-sm);
   line-height: 1;
-  grid-template-columns: auto minmax(200px, 1fr) auto minmax(200px, 1fr) 2rem;
+  grid-template-columns: auto minmax(200px, 1fr) auto minmax(200px, 1fr) 2em;
 }
 .rename-preview-grid-header {
   top: 0;

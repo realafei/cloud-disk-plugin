@@ -26,7 +26,8 @@ export const isBoolean = (val: unknown): val is boolean =>
 
 // export const isPromise = (val: unknown): val is Promise<any> => is<Promise<any>>(val, "Promise");
 
-// export const isFunction = (val: unknown): val is Function => is<Function>(val, "Function");
+// export const isFunction = (val: unknown): val is Function =>
+//   is<Function>(val, "Function");
 
 export const isNull = (val: unknown): val is null => val === null;
 

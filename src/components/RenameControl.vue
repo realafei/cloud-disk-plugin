@@ -191,6 +191,8 @@ export default defineComponent({
 .rename-control-footer-button {
   border: none;
   cursor: pointer;
+  padding: 0;
+  font-size: var(--font-size);
   transition: var(--transition-all);
   line-height: 1;
   background-color: transparent;

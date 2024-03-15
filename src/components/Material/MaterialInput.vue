@@ -118,7 +118,7 @@ export default defineComponent({
       textareaStyle.value.height = "auto";
       nextTick(() => {
         textareaStyle.value.height = textareaRef.value?.value
-          ? textareaRef.value.scrollHeight + 1 + "px"
+          ? textareaRef.value.scrollHeight + "px"
           : "auto";
       });
     };
@@ -157,14 +157,17 @@ export default defineComponent({
 
 <style scoped>
 .material-input {
+  --material-input-size: 0.4em;
+  --material-label-size: 0.8em;
   color: var(--color-gray);
   display: flex;
   position: relative;
   font-size: inherit;
   box-sizing: border-box;
-  margin-top: 0.5rem;
-  padding-top: 0.75rem;
-  margin-bottom: 0.5rem;
+  margin-top: var(--material-input-size);
+  padding-top: calc(var(--material-input-size) + var(--material-label-size));
+  padding-bottom: var(--material-input-size);
+  margin-bottom: var(--material-input-size);
   border-bottom: 1px solid var(--color-gray);
   background-color: transparent;
 }
@@ -176,13 +179,11 @@ export default defineComponent({
   color: var(--color-gray-700);
   width: 100%;
   outline: none;
-  min-height: 1.25rem;
+  font-size: inherit;
+  min-height: calc(var(--material-input-size) + 1em);
   transition: border-bottom-color var(--transition-default);
-  box-sizing: border-box;
-  line-height: 1.25rem;
-  padding-top: 0.25rem;
-  border-bottom: 1px solid transparent;
-  padding-bottom: 0.25rem;
+  box-sizing: content-box;
+  line-height: calc(var(--material-input-size) + 1em);
   background-color: transparent;
   border-block-end-width: 0;
   border-inline-end-width: 0;
@@ -192,14 +193,15 @@ export default defineComponent({
 .material-input.is-focus .material-input-input,
 .material-input.is-focus .material-input-textarea {
   border-bottom-color: var(--color-blue);
+  border-block-end-color: var(--color-blue);
 }
 .material-input.is-disabled .material-input-input,
 .material-input.is-disabled .material-input-textarea {
   color: var(--color-gray);
 }
 .material-input-label {
-  top: calc(100% - 1.375rem);
-  left: 0.5rem;
+  top: calc(var(--material-label-size) + var(--material-input-size) * 1.5);
+  left: calc(var(--material-input-size) * 2);
   color: var(--color-gray-700);
   position: absolute;
   transition:
@@ -214,7 +216,7 @@ export default defineComponent({
   top: 0;
   left: 0;
   color: var(--color-gray-900);
-  font-size: 0.75rem;
+  font-size: var(--material-label-size);
 }
 .material-input.is-focus .material-input-label {
   color: var(--color-blue);

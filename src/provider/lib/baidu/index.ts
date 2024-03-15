@@ -22,7 +22,7 @@ export default class ProviderBaidu extends Provider {
   rootElementInsertTarget = ".wp-s-aside-nav__main-top";
   rootElementInsertMethod: TRootElementInsertMethod = "append";
 
-  EnterComponent = EnterComponent;
+  EnterComponent = () => EnterComponent;
 
   async getOriginList() {
     const vue = this._getVue();
@@ -64,8 +64,7 @@ export default class ProviderBaidu extends Provider {
         newname: item.newFileName,
       };
     });
-    this._updateStatusCount();
-    this._updateStatusList();
+    this._updateStatus();
     this._vueInstance.renameFileList = filelist;
     body.append("filelist", JSON.stringify(filelist));
     this._vueInstance.editLoading = true;
