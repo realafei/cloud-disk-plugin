@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import { h, computed, defineComponent } from "vue";
+import { computed, defineComponent } from "vue";
 
 const error = {
   name: "error",
